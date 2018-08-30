@@ -66,7 +66,8 @@ public class PackageListGenerator extends DefaultTask {
         "org/apache/xerces",
         "org/w3c/dom",
         "org/xml/sax",
-        "sun/misc");
+        "sun/misc"
+    );
 
     private File outputFile;
     private FileCollection classpath;
