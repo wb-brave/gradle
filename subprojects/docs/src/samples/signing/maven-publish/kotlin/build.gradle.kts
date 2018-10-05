@@ -72,7 +72,7 @@ signing {
 }
 // end::sign-publication[]
 
-tasks.getByName<Javadoc>("javadoc") {
+tasks.javadoc {
     if (JavaVersion.current().isJava9Compatible) {
         (options as StandardJavadocDocletOptions).addBooleanOption("html4", true)
     }
