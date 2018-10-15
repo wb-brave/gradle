@@ -81,9 +81,8 @@ public interface SwiftBinary extends ComponentWithObjectFiles, ComponentWithDepe
 
     /**
      * {@inheritDoc}
-     *
-     * @since 4.5
      */
+    @Override
     SwiftPlatform getTargetPlatform();
 
     /**

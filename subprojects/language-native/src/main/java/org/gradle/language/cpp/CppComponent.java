@@ -89,9 +89,8 @@ public interface CppComponent extends ComponentWithBinaries, ComponentWithDepend
     Configuration getImplementationDependencies();
 
     /**
-     * Returns the binaries for this library.
-     *
-     * @since 4.5
+     * {@inheritDoc}
      */
+    @Override
     BinaryCollection<? extends CppBinary> getBinaries();
 }

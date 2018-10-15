@@ -17,41 +17,31 @@
 package org.gradle.language;
 
 import org.gradle.api.Incubating;
+import org.gradle.api.component.SoftwareComponent;
 import org.gradle.api.provider.SetProperty;
 import org.gradle.nativeplatform.OperatingSystemFamily;
 
 /**
  * Represents a component with output files.
  *
- * @since 4.8
+ * @since 5.1
  */
 @Incubating
-public interface ComponentWithTargets {
+public interface ComponentWithTargets extends SoftwareComponent {
     /**
-     * Specifies the set of operating systems for the target machine.
-     *
-     * @since 4.8
+     * Specifies the set of operating systems for this component.
      */
     SetProperty<OperatingSystemFamily> getOperatingSystems();
 
     /**
-     * Adds a operating system to the set for the target machine.
-     *
-     * @since 4.8
-     */
-    void operatingSystem(OperatingSystemFamily operatingSystemFamily);
-
-    /**
      * Builder for defining a target machine
-     *
-     * @since 4.8
      */
     TargetMachine getTargets();
 
     /**
      * Target machine builder
      *
-     * @since 4.8
+     * @since 5.1
      *
      * TODO: Expand this for architecture and other target attributes.
      */

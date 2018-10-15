@@ -135,11 +135,6 @@ public abstract class DefaultCppComponent extends DefaultNativeComponent impleme
     }
 
     @Override
-    public void operatingSystem(OperatingSystemFamily operatingSystemFamily) {
-        operatingSystems.add(operatingSystemFamily);
-    }
-
-    @Override
     public TargetMachine getTargets() {
         return targetMachineBuilder;
     }

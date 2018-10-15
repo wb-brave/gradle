@@ -74,9 +74,8 @@ public interface CppBinary extends ComponentWithObjectFiles, ComponentWithDepend
 
     /**
      * {@inheritDoc}
-     *
-     * @since 4.5
      */
+    @Override
     CppPlatform getTargetPlatform();
 
     /**

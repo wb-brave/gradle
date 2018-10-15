@@ -61,10 +61,9 @@ public interface SwiftComponent extends ComponentWithBinaries, ComponentWithDepe
     FileCollection getSwiftSource();
 
     /**
-     * Returns the binaries for this library.
-     *
-     * @since 4.5
+     * {@inheritDoc}
      */
+    @Override
     BinaryCollection<? extends SwiftBinary> getBinaries();
 
     /**

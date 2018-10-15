@@ -94,11 +94,6 @@ public abstract class DefaultSwiftComponent extends DefaultNativeComponent imple
     }
 
     @Override
-    public void operatingSystem(OperatingSystemFamily operatingSystemFamily) {
-        operatingSystems.add(operatingSystemFamily);
-    }
-
-    @Override
     public TargetMachine getTargets() {
         return targetMachineBuilder;
     }
