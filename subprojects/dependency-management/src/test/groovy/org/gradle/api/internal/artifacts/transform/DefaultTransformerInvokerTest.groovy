@@ -50,7 +50,7 @@ class DefaultTransformerInvokerTest extends ConcurrentSpec {
         }
     }
     def workExecutor = new DefaultWorkExecutor(new CreateOutputsStep(executeStep))
-    def historyRepository = Mock(TransformerExecutionHistoryRepository)
+    def historyRepository = Mock(GradleUserHomeTransformerExecutionHistoryRepository)
     DefaultTransformerInvoker transformerInvoker
 
     def setup() {
@@ -58,7 +58,7 @@ class DefaultTransformerInvokerTest extends ConcurrentSpec {
     }
 
     private DefaultTransformerInvoker createInvoker() {
-        new DefaultTransformerInvoker(workExecutor, snapshotter, artifactTransformListener, historyRepository, outputFileCollectionFingerprinter)
+        new DefaultTransformerInvoker(workExecutor, snapshotter, artifactTransformListener, historyRepository, outputFileCollectionFingerprinter, projectFinder)
     }
 
     def "reuses result for given inputs and transform"() {
@@ -103,7 +103,7 @@ class DefaultTransformerInvokerTest extends ConcurrentSpec {
         _ * snapshotter.snapshot(_) >> snapshot(hash)
 
         expect:
-        !transformerInvoker.hasCachedResult(inputFile, transformer)
+        !transformerInvoker.hasCachedResult(inputFile, transformer, subject)
     }
 
     def "contains result after transform ran once"() {
@@ -122,7 +122,7 @@ class DefaultTransformerInvokerTest extends ConcurrentSpec {
         transformerInvoker.invoke(inputFile, transformerRegistration, subject)
 
         then:
-        transformerInvoker.hasCachedResult(inputFile, transformer)
+        transformerInvoker.hasCachedResult(inputFile, transformer, subject)
     }
 
     def "does not contain result if a different transform ran"() {
@@ -142,7 +142,7 @@ class DefaultTransformerInvokerTest extends ConcurrentSpec {
         transformerInvoker.invoke(inputFile, transformerRegistration, subject)
 
         then:
-        !transformerInvoker.hasCachedResult(inputFile, otherTransformer)
+        !transformerInvoker.hasCachedResult(inputFile, otherTransformer, subject)
     }
 
     def "reuses result when transform returns its input file"() {
