@@ -89,14 +89,14 @@ public class DefaultTransformerInvoker implements TransformerInvoker {
     }
 
     @Override
-    public boolean hasCachedResult(File primaryInput, Transformer transformer, TransformationSubject subject) {
-        return determineHistoryRepository(subject).hasCachedResult(getTransformationIdentity(primaryInput, transformer, subject));
+    public boolean hasCachedResult(File primaryInput, Transformer transformer, TransformationSubject subject, int index) {
+        return determineHistoryRepository(subject).hasCachedResult(getTransformationIdentity(primaryInput, transformer, subject, index));
     }
 
     @Override
     public Try<ImmutableList<File>> invoke(TransformerInvocation invocation) {
         return Try.ofFailable(() ->
-            doInvoke(invocation.getPrimaryInput(), invocation.getTransformer(), invocation.getSubjectBeingTransformed()).get()
+            doInvoke(invocation.getPrimaryInput(), invocation.getTransformer(), invocation.getSubjectBeingTransformed(), invocation.getIndex()).get()
         ).mapFailure(e -> wrapInTransformInvocationException(invocation, e));
     }
 
@@ -104,9 +104,9 @@ public class DefaultTransformerInvoker implements TransformerInvoker {
         return new TransformInvocationException(invocation.getPrimaryInput().getAbsoluteFile(), invocation.getTransformer().getImplementationClass(), originalFailure);
     }
 
-    private Try<ImmutableList<File>> doInvoke(File primaryInput, Transformer transformer, TransformationSubject subject) {
+    private Try<ImmutableList<File>> doInvoke(File primaryInput, Transformer transformer, TransformationSubject subject, int index) {
         TransformerExecutionHistoryRepository historyRepository = determineHistoryRepository(subject);
-        TransformationIdentity identity = getTransformationIdentity(primaryInput, transformer, subject);
+        TransformationIdentity identity = getTransformationIdentity(primaryInput, transformer, subject, index);
         return historyRepository.withWorkspace(identity, (identityString, workspace) -> {
             return fireTransformListeners(transformer, subject, () -> {
                 TransformerExecution execution = new TransformerExecution(primaryInput, transformer, workspace, identityString, historyRepository);
@@ -116,27 +116,28 @@ public class DefaultTransformerInvoker implements TransformerInvoker {
         });
     }
 
-    private TransformationIdentity getTransformationIdentity(File primaryInput, Transformer transformer, TransformationSubject subject) {
-        return subject.getProducer().map(project -> getMutableTransformationIdentity(primaryInput, transformer, project))
-            .orElseGet(() -> getImmutableTransformationIdentity(primaryInput, transformer));
+    private TransformationIdentity getTransformationIdentity(File primaryInput, Transformer transformer, TransformationSubject subject, int index) {
+        return subject.getProducer().map(project -> getMutableTransformationIdentity(primaryInput, transformer, project, subject, index))
+            .orElseGet(() -> getImmutableTransformationIdentity(primaryInput, transformer, subject.getInitialFileName()));
     }
 
-    private TransformationIdentity getImmutableTransformationIdentity(File primaryInput, Transformer transformer) {
+    private TransformationIdentity getImmutableTransformationIdentity(File primaryInput, Transformer transformer, String initialFileName) {
         FileSystemLocationSnapshot snapshot = fileSystemSnapshotter.snapshot(primaryInput);
         return new ImmutableTransformationIdentity(
-            primaryInput.getName(), // TODO: Capture initial file name in subject
+            initialFileName,
             snapshot.getAbsolutePath(),
             snapshot.getHash(),
             transformer.getSecondaryInputHash()
         );
     }
 
-    private TransformationIdentity getMutableTransformationIdentity(File primaryInput, Transformer transformer, ProjectComponentIdentifier initalSubjectProducer) {
+    private TransformationIdentity getMutableTransformationIdentity(File primaryInput, Transformer transformer, ProjectComponentIdentifier initalSubjectProducer, TransformationSubject subject, int index) {
         return new MutableTransformationIdentity(
             initalSubjectProducer.getProjectPath(),
-            primaryInput.getName(), // TODO: Capture inital file name in subject
-            ImmutableList.of(), // TODO: Capture previous transformers in subject
+            subject.getInitialFileName(),
+            subject.getPreviousTransformerIdentities(),
             primaryInput.getName(),
+            index,
             transformer.getSecondaryInputHash()
         );
     }
@@ -452,13 +453,15 @@ public class DefaultTransformerInvoker implements TransformerInvoker {
         private final String initialSubjectFileName;
         private final ImmutableList<HashCode> previousTransformers;
         private final String currentSubjectFileName;
+        private final int index;
         private final HashCode secondaryInputsHash;
 
-        public MutableTransformationIdentity(String projectPath, String initialSubjectFileName, ImmutableList<HashCode> previousTransformers, String currentSubjectFileName, HashCode secondaryInputsHash) {
+        public MutableTransformationIdentity(String projectPath, String initialSubjectFileName, ImmutableList<HashCode> previousTransformers, String currentSubjectFileName, int index, HashCode secondaryInputsHash) {
             this.projectPath = projectPath;
             this.initialSubjectFileName = initialSubjectFileName;
             this.previousTransformers = previousTransformers;
             this.currentSubjectFileName = currentSubjectFileName;
+            this.index = index;
             this.secondaryInputsHash = secondaryInputsHash;
         }
 
@@ -476,6 +479,7 @@ public class DefaultTransformerInvoker implements TransformerInvoker {
                 hasher.putHash(previousTransformer);
             }
             hasher.putString(currentSubjectFileName);
+            hasher.putInt(index);
             hasher.putHash(secondaryInputsHash);
             return hasher.hash().toString();
         }
@@ -503,6 +507,9 @@ public class DefaultTransformerInvoker implements TransformerInvoker {
             if (!currentSubjectFileName.equals(that.currentSubjectFileName)) {
                 return false;
             }
+            if (index != that.index) {
+                return false;
+            }
             return secondaryInputsHash.equals(that.secondaryInputsHash);
         }
 
@@ -512,6 +519,7 @@ public class DefaultTransformerInvoker implements TransformerInvoker {
             result = 31 * result + initialSubjectFileName.hashCode();
             result = 31 * result + previousTransformers.hashCode();
             result = 31 * result + currentSubjectFileName.hashCode();
+            result = 31 * result + index;
             result = 31 * result + secondaryInputsHash.hashCode();
             return result;
         }

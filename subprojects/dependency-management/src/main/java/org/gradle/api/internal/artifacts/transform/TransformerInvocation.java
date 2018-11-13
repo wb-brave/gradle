@@ -25,11 +25,13 @@ public class TransformerInvocation {
     private final Transformer transformer;
     private final File primaryInput;
     private final TransformationSubject subjectBeingTransformed;
+    private final int index;
 
-    public TransformerInvocation(Transformer transformer, File primaryInput, TransformationSubject subjectBeingTransformed) {
+    public TransformerInvocation(Transformer transformer, File primaryInput, TransformationSubject subjectBeingTransformed, int index) {
         this.transformer = transformer;
         this.primaryInput = primaryInput;
         this.subjectBeingTransformed = subjectBeingTransformed;
+        this.index = index;
     }
 
     public File getPrimaryInput() {
@@ -42,5 +44,9 @@ public class TransformerInvocation {
 
     public TransformationSubject getSubjectBeingTransformed() {
         return subjectBeingTransformed;
+    }
+
+    public int getIndex() {
+        return index;
     }
 }

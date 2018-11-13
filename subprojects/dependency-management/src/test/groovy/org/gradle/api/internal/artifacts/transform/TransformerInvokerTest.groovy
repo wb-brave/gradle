@@ -63,15 +63,16 @@ class TransformerInvokerTest extends Specification {
         1 * transformer.implementationClass >> ArtifactTransform
         1 * transformer.getSecondaryInputHash() >> HashCode.fromInt(1234)
         2 * sourceSubject.getProducer() >> Optional.empty()
+        1 * sourceSubject.getInitialFileName() >> "initial.jar"
         1 * historyRepository.withWorkspace(_, _) >> { TransformationIdentity identity, action ->
-            action.apply(identity.getIdentity(), new File("workspace"))
+            action.useWorkspace(identity.getIdentity(), new File("workspace"))
         }
         _ * artifactTransformListener._
         0 * _
     }
 
     private TransformerInvocation createInvocation(File fileOne) {
-        new TransformerInvocation(transformer, fileOne, sourceSubject)
+        new TransformerInvocation(transformer, fileOne, sourceSubject, 0)
     }
 
 }

@@ -103,7 +103,7 @@ class DefaultTransformerInvokerTest extends ConcurrentSpec {
         _ * snapshotter.snapshot(_) >> snapshot(hash)
 
         expect:
-        !transformerInvoker.hasCachedResult(inputFile, transformer, subject)
+        !transformerInvoker.hasCachedResult(inputFile, transformer, subject, index)
     }
 
     def "contains result after transform ran once"() {
@@ -122,7 +122,7 @@ class DefaultTransformerInvokerTest extends ConcurrentSpec {
         transformerInvoker.invoke(inputFile, transformerRegistration, subject)
 
         then:
-        transformerInvoker.hasCachedResult(inputFile, transformer, subject)
+        transformerInvoker.hasCachedResult(inputFile, transformer, subject, index)
     }
 
     def "does not contain result if a different transform ran"() {
@@ -142,7 +142,7 @@ class DefaultTransformerInvokerTest extends ConcurrentSpec {
         transformerInvoker.invoke(inputFile, transformerRegistration, subject)
 
         then:
-        !transformerInvoker.hasCachedResult(inputFile, otherTransformer, subject)
+        !transformerInvoker.hasCachedResult(inputFile, otherTransformer, subject, index)
     }
 
     def "reuses result when transform returns its input file"() {
